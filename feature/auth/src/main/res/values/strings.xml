@@ -15,7 +15,12 @@
     <string name="username_cannot_be_empty">Username cannot be empty</string>
     <string name="password_must_be_at_least_8_characters">Password must be at least 8 characters</string>
     <string name="password_confirmation_must_match">Password confirmation must match</string>
-    <string name="please_input_username_and_password_first">Please input username and password first</string>
+    <string name="username_password_empty_message">Please input username and password first</string>
     <string name="settings">Settings</string>
     <string name="welcome">Welcome</string>
+    <string name="email">Email</string>
+    <string name="email_cannot_be_empty_or_invalid">Email cannot be empty or invalid</string>
+    <string name="email_example">e.g. example@gmail.com</string>
+    <string name="register_note">Note: Based on the \"Fake Store API Docs\", register account is currently unavailable. This form is to create user (Simulation).</string>
+    <string name="get_user_auth_from_api_docs_to_login">Get User Auth from API Docs to Login</string>
 </resources>

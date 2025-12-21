@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -44,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
@@ -64,9 +66,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -96,16 +100,14 @@ fun SharedTransitionScope.AuthScreen(
     val titleText = if (uiState.isLoginState) stringResource(R.string.login)
     else stringResource(R.string.register)
 
-    LaunchedEffect(uiState.uiMessageResId) {
-        uiState.uiMessageResId?.let {
-            snackBarHostState.showSnackbar(
-                message = context.getString(it)
-            )
+    LaunchedEffect(uiState.uiMessage) {
+        uiState.uiMessage?.let {
+            snackBarHostState.showSnackbar(message = it)
             localHapticFeedback.performHapticFeedback(HapticFeedbackType.Reject)
         }
     }
 
-    // Login Success
+    // Login Success Action
     LaunchedEffect(uiState.isLoginSuccess) {
         uiState.isLoginSuccess?.let {
             onLoginSuccess()
@@ -113,6 +115,9 @@ fun SharedTransitionScope.AuthScreen(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
     }
+
+    val emptyErrorMessage = stringResource(R.string.username_password_empty_message)
+    val registerSuccessMessage = stringResource(R.string.register_success_please_login)
 
     Scaffold(
         topBar = {
@@ -182,7 +187,9 @@ fun SharedTransitionScope.AuthScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier
+                    .widthIn(max = 320.dp)
+                    .padding(vertical = 16.dp)
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_launcher_foreground),
@@ -199,17 +206,32 @@ fun SharedTransitionScope.AuthScreen(
                 )
                 AuthTabMenuView(
                     modifier = Modifier
-                        .widthIn(max = 320.dp)
+                        .fillMaxWidth()
                         .padding(vertical = 16.dp),
                     isLoginScreen = uiState.isLoginState,
                     onTabChange = {
                         viewModel.toggleLoginState(it)
                     }
                 )
+                AnimatedVisibility(
+                    visible = !uiState.isLoginState,
+                    enter = fadeIn() + slideInVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it },
+                    exit = slideOutVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it / 2 } + fadeOut(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
+                ) {
+                    Text(
+                        text = stringResource(R.string.register_note),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .widthIn(max = 320.dp)
             ) {
                 OutlinedTextField(
                     value = viewModel.username,
@@ -235,10 +257,48 @@ fun SharedTransitionScope.AuthScreen(
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .widthIn(max = 320.dp)
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
+                AnimatedVisibility(
+                    visible = !uiState.isLoginState,
+                    enter = fadeIn() + slideInVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it },
+                    exit = slideOutVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it / 2 } + fadeOut(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
+                ) {
+                    OutlinedTextField(
+                        value = viewModel.email,
+                        onValueChange = viewModel::onEmailChange,
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.large,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = stringResource(R.string.email)
+                            )
+                        },
+                        placeholder = { Text(text = stringResource(R.string.email_example)) },
+                        label = { Text(text = stringResource(R.string.email)) },
+                        isError = viewModel.emailError && !uiState.isLoginState,
+                        supportingText = {
+                            if (viewModel.emailError && !uiState.isLoginState) {
+                                Text(
+                                    text = stringResource(R.string.email_cannot_be_empty_or_invalid),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Next,
+                            keyboardType = KeyboardType.Email
+                        ),
+                        keyboardActions = KeyboardActions {
+                            this.defaultKeyboardAction(imeAction = ImeAction.Next)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 OutlinedTextField(
                     value = viewModel.password,
                     onValueChange = viewModel::onPasswordChange,
@@ -279,7 +339,8 @@ fun SharedTransitionScope.AuthScreen(
                         }
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = if (uiState.isLoginState) ImeAction.Send else ImeAction.Next
+                        imeAction = if (uiState.isLoginState) ImeAction.Send else ImeAction.Next,
+                        keyboardType = KeyboardType.Password
                     ),
                     keyboardActions = KeyboardActions {
                         if (uiState.isLoginState) {
@@ -290,15 +351,15 @@ fun SharedTransitionScope.AuthScreen(
                             this.defaultKeyboardAction(imeAction = ImeAction.Next)
                         }
                     },
-                    modifier = Modifier
-                        .widthIn(max = 320.dp)
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
                 AnimatedVisibility(
                     visible = !uiState.isLoginState,
                     enter = fadeIn() + slideInVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it },
                     exit = slideOutVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it / 2 } + fadeOut(),
-                    modifier = Modifier.animateContentSize()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
                 ) {
                     OutlinedTextField(
                         value = viewModel.passwordConfirmation,
@@ -339,33 +400,48 @@ fun SharedTransitionScope.AuthScreen(
                                 )
                             }
                         },
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Send,
+                            keyboardType = KeyboardType.Password
+                        ),
                         keyboardActions = KeyboardActions {
                             this.defaultKeyboardAction(imeAction = ImeAction.Done)
-                            viewModel.register()
+                            viewModel.register(
+                                onRegisterSuccess = {
+                                    viewModel.showUiMessage(registerSuccessMessage)
+                                }
+                            )
                             focusManager.clearFocus()
                         },
-                        modifier = Modifier
-                            .widthIn(max = 320.dp)
-                            .fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
                 Button(
                     shapes = CustomButtonShapes(),
-                    enabled = uiState.isLoginState || (viewModel.username.isNotBlank() &&
-                            viewModel.password.isNotBlank() && viewModel.passwordConfirmation.isNotBlank() &&
-                            viewModel.password == viewModel.passwordConfirmation),
+                    enabled = if (uiState.isLoginState) {
+                        !uiState.isLoading
+                    } else {
+                        !uiState.isLoading &&
+                                viewModel.username.isNotBlank() &&
+                                viewModel.email.isNotBlank() &&
+                                !viewModel.emailError &&
+                                viewModel.password.length >= 8 &&
+                                viewModel.password == viewModel.passwordConfirmation
+                    },
                     onClick = {
-                        if (uiState.isLoading) return@Button
                         focusManager.clearFocus()
                         if (viewModel.username.isBlank() || viewModel.password.isBlank()) {
-                            viewModel.showUiMessage(R.string.please_input_username_and_password_first)
+                            viewModel.showUiMessage(emptyErrorMessage)
                             return@Button
                         }
-                        if (uiState.isLoginState) viewModel.login() else viewModel.register()
+                        if (uiState.isLoginState) viewModel.login()
+                        else viewModel.register(
+                            onRegisterSuccess = {
+                                viewModel.showUiMessage(registerSuccessMessage)
+                            }
+                        )
                     },
                     modifier = Modifier
-                        .widthIn(max = 320.dp)
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {
@@ -379,6 +455,30 @@ fun SharedTransitionScope.AuthScreen(
                                 text = titleText
                             )
                         }
+                    }
+                }
+                AnimatedVisibility(
+                    visible = uiState.isLoginState,
+                    enter = fadeIn() + slideInVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it },
+                    exit = slideOutVertically(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()) { -it / 2 } + fadeOut(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
+                ) {
+                    TextButton(
+                        shapes = CustomButtonShapes(),
+                        onClick = {
+                            viewModel.randomUserLogin()
+                            localHapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.get_user_auth_from_api_docs_to_login),
+                            textDecoration = TextDecoration.Underline,
+                            maxLines = 1,
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))

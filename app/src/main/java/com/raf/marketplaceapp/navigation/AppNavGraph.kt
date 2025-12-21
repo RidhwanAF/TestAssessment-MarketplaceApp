@@ -24,6 +24,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent
 import com.raf.auth.presentation.AuthScreen
+import com.raf.marketplace.presentation.detail.DetailScreen
+import com.raf.marketplace.presentation.list.HomeScreen
 import com.raf.settings.presentation.SettingsScreen
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -112,11 +114,11 @@ fun AppNavGraph(
                 }
 
                 entry<Route.Home> {
-
+                    HomeScreen()
                 }
 
                 entry<Route.Detail> {
-
+                    DetailScreen()
                 }
             }
         )

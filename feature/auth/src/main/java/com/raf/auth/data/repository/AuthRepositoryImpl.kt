@@ -1,22 +1,22 @@
 package com.raf.auth.data.repository
 
 import android.util.Log
-import com.raf.auth.R
+import com.google.gson.Gson
 import com.raf.auth.data.local.AuthDataStore
-import com.raf.auth.data.local.db.AuthDatabase
-import com.raf.auth.data.local.db.AuthEntity
-import com.raf.auth.domain.model.AuthResult
+import com.raf.auth.data.remote.AuthApiService
+import com.raf.auth.data.remote.model.LoginRequest
+import com.raf.auth.data.remote.model.RegisterRequest
 import com.raf.auth.domain.repository.AuthRepository
 import com.raf.core.data.utility.EncryptionManager
 import com.raf.core.domain.contract.AuthProvider
+import com.raf.core.domain.model.ApiResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import java.util.UUID
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    authDb: AuthDatabase,
+    private val apiService: AuthApiService,
     private val authDataStore: AuthDataStore,
 ) : AuthRepository, AuthProvider {
 
@@ -24,60 +24,57 @@ class AuthRepositoryImpl @Inject constructor(
         private const val TAG = "AuthRepositoryImpl"
     }
 
-    private val dao = authDb.authDao
-
     override suspend fun login(
         username: String,
         password: String,
-    ): AuthResult<String> {
-        try {
-            val authEntity = dao.getAuthByUsername(username)
-                ?: return AuthResult.Error(R.string.user_not_found_please_register_first)
+    ): ApiResult<String> {
+        return try {
+            val loginRequest = LoginRequest(
+                username = username,
+                password = password,
+            )
+            val result = apiService.login(loginRequest)
+            if (result.isSuccessful) {
+                val token = result.body()?.token ?: return ApiResult.Error(result.message())
 
-            // Validate Login
-            return if (authEntity.username != username ||
-                !EncryptionManager.compareIsSame(password, authEntity.password)
-            ) {
-                AuthResult.Error(R.string.invalid_username_or_password)
-            } else {
-                val userId = authEntity.id
-                val encryptedToken = EncryptionManager.encrypt(userId)
-                    ?: return AuthResult.Error(R.string.failed_to_login)
-
+                val encryptedToken =
+                    EncryptionManager.encrypt(token) ?: return ApiResult.Error(result.message())
                 authDataStore.saveSessionToken(encryptedToken)
-                AuthResult.Success(authEntity.username)
+                ApiResult.Success(token)
+            } else {
+                val errorMessage = result.errorBody()?.string()?.takeIf { it.isNotEmpty() }
+                    ?: result.message()
+                ApiResult.Error(errorMessage)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to login", e)
-            return AuthResult.Error(R.string.failed_to_login)
+            ApiResult.Error(e.localizedMessage ?: "Unknown Error")
         }
     }
 
     override suspend fun register(
         username: String,
+        email: String,
         password: String,
-    ): AuthResult<String> {
-        try {
-            // Validate User
-            val isUserExist = dao.getAuthByUsername(username) != null
-            if (isUserExist) {
-                return AuthResult.Error(R.string.user_already_exist)
-            }
-
-            // Register User
-            val encryptedPassword = EncryptionManager.encrypt(password)
-                ?: return AuthResult.Error(R.string.failed_to_register)
-            val userId = UUID.randomUUID().toString()
-            val newAuthEntity = AuthEntity(
-                id = userId,
+    ): ApiResult<String> {
+        return try {
+            val registerRequest = RegisterRequest(
+                id = 0,
                 username = username,
-                password = encryptedPassword,
+                email = email,
+                password = password,
             )
-            dao.insertAuth(newAuthEntity)
-            return AuthResult.Success(userId)
+            val result = apiService.register(registerRequest)
+            if (result.isSuccessful) {
+                return ApiResult.Success(result.body()?.id.toString())
+            } else {
+                val errorMessage = result.errorBody()?.string()?.takeIf { it.isNotEmpty() }
+                    ?: result.message()
+                ApiResult.Error(errorMessage)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register", e)
-            return AuthResult.Error(R.string.failed_to_register)
+            return ApiResult.Error(e.localizedMessage ?: "Unknown Error")
         }
     }
 
