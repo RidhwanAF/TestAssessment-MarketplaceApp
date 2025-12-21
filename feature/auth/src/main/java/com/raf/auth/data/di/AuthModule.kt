@@ -21,7 +21,7 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun providePokemonApiService(retrofit: Retrofit): AuthApiService {
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
         return retrofit.create(AuthApiService::class.java)
     }
 

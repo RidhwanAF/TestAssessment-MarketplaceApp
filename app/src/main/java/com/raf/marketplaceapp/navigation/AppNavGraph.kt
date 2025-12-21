@@ -114,7 +114,14 @@ fun AppNavGraph(
                 }
 
                 entry<Route.Home> {
-                    HomeScreen()
+                    val isSettingsScreenVisible = backStack.contains(Route.Settings)
+
+                    HomeScreen(
+                        isSettingsScreenVisible = isSettingsScreenVisible,
+                        onNavigateToSettings = {
+                            backStack.add(Route.Settings)
+                        }
+                    )
                 }
 
                 entry<Route.Detail> {
