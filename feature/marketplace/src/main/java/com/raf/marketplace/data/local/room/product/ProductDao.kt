@@ -18,6 +18,9 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE id = :id")
     suspend fun getProductById(id: Int): ProductEntity?
 
+    @Query("SELECT * FROM products WHERE id IN (:productIds)")
+    fun getProductsByIds(productIds: List<Int>): Flow<List<ProductEntity>>
+
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateProduct(product: ProductEntity)
 

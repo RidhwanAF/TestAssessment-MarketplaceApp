@@ -96,6 +96,12 @@ class MarketplaceRepositoryImpl @Inject constructor(
         return ApiResult.Success(productEntity.toDomain())
     }
 
+    override fun getProductsByIds(productIds: List<Int>): Flow<List<Product>> {
+        return productDao.getProductsByIds(productIds).map { productsEntity ->
+            productsEntity.map { productEntity -> productEntity.toDomain() }
+        }
+    }
+
     override fun getProducts(productFilter: ProductFilter?): Flow<List<Product>> {
         return try {
             Log.d(TAG, "getProducts: $productFilter")
@@ -124,7 +130,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
 
     override suspend fun addToCart(cart: Cart): Result<Unit> {
         try {
-            cartDao.upsertItem(cart.toEntity())
+            cartDao.addOrUpdateItem(cart.toEntity())
             return Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to add item to cart", e)
@@ -147,6 +153,14 @@ class MarketplaceRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get item count from cart", e)
             flowOf(0)
+        }
+    }
+
+    override suspend fun updateQuantityByProductId(productId: Int, newQuantity: Int) {
+        try {
+            cartDao.updateQuantityByProductId(productId, newQuantity)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to update quantity by product ID", e)
         }
     }
 

@@ -11,6 +11,7 @@ import com.raf.marketplace.domain.usecase.cart.DeleteAllItemFromCartUseCase
 import com.raf.marketplace.domain.usecase.cart.DeleteItemCartByProductIdUseCase
 import com.raf.marketplace.domain.usecase.cart.GetAllItemFromCartUseCase
 import com.raf.marketplace.domain.usecase.cart.GetItemCountFromCartUseCase
+import com.raf.marketplace.domain.usecase.cart.UpdateQuantityByProductIdUseCase
 import com.raf.marketplace.domain.usecase.product.FetchProductByIdUseCase
 import com.raf.marketplace.domain.usecase.product.FetchProductsUseCase
 import com.raf.marketplace.domain.usecase.product.GetProductCategoriesUseCase
@@ -107,5 +108,11 @@ object MarketPlaceModule {
     @Singleton
     fun provideGetItemCountFromCartUseCase(marketplaceRepository: MarketplaceRepository): GetItemCountFromCartUseCase {
         return GetItemCountFromCartUseCase(marketplaceRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUpdateQuantityByProductIdUseCase(marketplaceRepository: MarketplaceRepository): UpdateQuantityByProductIdUseCase {
+        return UpdateQuantityByProductIdUseCase(marketplaceRepository)
     }
 }

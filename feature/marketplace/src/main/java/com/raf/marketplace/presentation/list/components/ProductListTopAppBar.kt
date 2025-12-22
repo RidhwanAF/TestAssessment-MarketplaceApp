@@ -101,6 +101,11 @@ fun SharedTransitionScope.ProductListTopAppBar(
                         }
                     },
                     state = rememberTooltipState(),
+                    modifier = Modifier
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState("cart-container"),
+                            animatedVisibilityScope = this
+                        )
                 ) {
                     BadgedBox(
                         badge = {

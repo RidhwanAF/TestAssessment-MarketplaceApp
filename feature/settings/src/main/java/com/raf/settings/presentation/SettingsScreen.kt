@@ -1,6 +1,7 @@
 package com.raf.settings.presentation
 
 import android.os.Build
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,6 +53,7 @@ import com.raf.settings.presentation.viewmodel.SettingsViewModel
 @Composable
 fun SharedTransitionScope.SettingsScreen(
     modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: SettingsViewModel = hiltViewModel(),
     onBack: () -> Unit = {},
 ) {
@@ -105,6 +107,10 @@ fun SharedTransitionScope.SettingsScreen(
             )
         },
         modifier = modifier
+            .sharedBounds(
+                sharedContentState = rememberSharedContentState("transition_settings_screen_container_key"),
+                animatedVisibilityScope = animatedVisibilityScope
+            )
             .fillMaxSize()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { innerPadding ->

@@ -83,7 +83,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _productFilterState.debounce(500).collectLatest { filter ->
                 Log.d(TAG, "getProducts: $filter")
-                getProductsUseCase(filter).collect { products ->
+                getProductsUseCase(productFilter = filter).collect { products ->
                     _uiState.update {
                         it.copy(products = products)
                     }

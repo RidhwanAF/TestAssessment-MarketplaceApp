@@ -10,7 +10,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
@@ -29,6 +28,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent
 import androidx.window.core.layout.WindowSizeClass
 import com.raf.auth.presentation.AuthScreen
+import com.raf.marketplace.presentation.cart.CartScreen
 import com.raf.marketplace.presentation.detail.DetailScreen
 import com.raf.marketplace.presentation.detail.viewmodel.DetailViewModel
 import com.raf.marketplace.presentation.list.HomeScreen
@@ -87,11 +87,7 @@ fun AppNavGraph(
             entryProvider = entryProvider {
                 entry<Route.Settings> {
                     SettingsScreen(
-                        modifier = Modifier
-                            .sharedBounds(
-                                sharedContentState = rememberSharedContentState("transition_settings_screen_container_key"),
-                                animatedVisibilityScope = LocalNavAnimatedContentScope.current
-                            ),
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         onBack = {
                             if (backStack.size > 1) {
                                 backStack.removeLastOrNull()
@@ -118,6 +114,7 @@ fun AppNavGraph(
                 entry<Route.Home>(
                     metadata = ListDetailSceneStrategy.listPane(sceneKey = "products")
                 ) {
+                    val isCartScreenVisible = backStack.contains(Route.Cart)
                     val isSettingsScreenVisible = backStack.contains(Route.Settings)
                     val detailEntry = backStack.findLast { it is Route.Detail } as? Route.Detail
                     val isDetailScreenVisible = detailEntry != null
@@ -127,7 +124,7 @@ fun AppNavGraph(
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
                         selectedProductId = selectedProductId,
                         isSettingsScreenVisible = isSettingsScreenVisible,
-                        showChartMenu = !isDetailScreenVisible,
+                        showChartMenu = !isDetailScreenVisible && !isCartScreenVisible,
                         onNavigateToSettings = {
                             backStack.add(Route.Settings)
                         },
@@ -149,6 +146,7 @@ fun AppNavGraph(
                     val adaptiveInfo = currentWindowAdaptiveInfo()
                     val isExpandedScreen =
                         adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+                    val isCartScreenVisible = backStack.contains(Route.Cart)
 
                     val viewModel = hiltViewModel<DetailViewModel, DetailViewModel.Factory>(
                         creationCallback = { factory ->
@@ -158,6 +156,7 @@ fun AppNavGraph(
 
                     DetailScreen(
                         animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                        isCartScreenVisible = isCartScreenVisible,
                         viewModel = viewModel,
                         isExpandedScreen = isExpandedScreen,
                         onNavigateToCart = {
@@ -174,7 +173,20 @@ fun AppNavGraph(
                 entry<Route.Cart>(
                     metadata = ListDetailSceneStrategy.extraPane(sceneKey = "products")
                 ) {
-                    Text("CART")
+                    CartScreen(
+                        animatedVisibilityScope = LocalNavAnimatedContentScope.current,
+                        onItemClicked = { productId ->
+                            backStack.removeIf { entry ->
+                                entry is Route.Detail && entry.id != productId
+                            }
+                            backStack.add(Route.Detail(productId))
+                        },
+                        onBack = {
+                            if (backStack.size > 1) {
+                                backStack.removeLastOrNull()
+                            }
+                        }
+                    )
                 }
             }
         )

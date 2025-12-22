@@ -29,4 +29,7 @@
     <string name="items_with_args">%1$d item</string>
     <string name="item_with_args">%1$d item</string>
     <string name="added_to_cart">Added to Cart</string>
+    <string name="empty_cart_message">Empty Cart, please add some items</string>
+    <string name="checkout">Checkout</string>
+    <string name="delete">Delete</string>
 </resources>
