@@ -45,7 +45,9 @@ import com.raf.marketplace.presentation.list.viewmodel.HomeViewModel
 fun SharedTransitionScope.HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     isSettingsScreenVisible: Boolean = false,
+    showChartMenu: Boolean = true,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToDetail: (Int) -> Unit = {},
 ) {
     val localLayoutDirection = LocalLayoutDirection.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -57,8 +59,8 @@ fun SharedTransitionScope.HomeScreen(
     val productFilterState by viewModel.productFilterState.collectAsStateWithLifecycle()
 
     // Error Message
-    LaunchedEffect(uiState.errorMessage) {
-        uiState.errorMessage?.let { message ->
+    LaunchedEffect(uiState.uiMessage) {
+        uiState.uiMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
         }
     }
@@ -70,6 +72,7 @@ fun SharedTransitionScope.HomeScreen(
             topBar = {
                 ProductListTopAppBar(
                     scrollBehavior = scrollBehavior,
+                    showChartMenu = showChartMenu,
                     searchQuery = productFilterState.query,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     isSettingsButtonVisible = !isSettingsScreenVisible,
@@ -79,7 +82,7 @@ fun SharedTransitionScope.HomeScreen(
             floatingActionButton = {
                 ProductFilterToolbar(
                     scrollBehavior = floatingActionToolbarScrollBehavior,
-                    selectedSortTypes = productFilterState.productSortTypes,
+                    selectedSortType = productFilterState.productSortType,
                     onClicked = viewModel::onProductFilterByChange,
                     onShortByChanged = viewModel::onProductSortByChange
                 )
@@ -140,7 +143,7 @@ fun SharedTransitionScope.HomeScreen(
                         ProductItem(
                             product = product,
                             onClicked = {
-
+                                onNavigateToDetail(product.id)
                             },
                             modifier = Modifier.animateItem()
                         )

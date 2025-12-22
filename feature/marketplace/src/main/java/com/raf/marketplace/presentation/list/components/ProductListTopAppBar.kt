@@ -64,6 +64,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SharedTransitionScope.ProductListTopAppBar(
     modifier: Modifier = Modifier,
+    showChartMenu: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -79,28 +80,34 @@ fun SharedTransitionScope.ProductListTopAppBar(
             )
         },
         actions = {
-            TooltipBox(
-                positionProvider =
-                    TooltipDefaults.rememberTooltipPositionProvider(
-                        TooltipAnchorPosition.Below
-                    ),
-                tooltip = {
-                    PlainTooltip {
-                        Text(text = stringResource(R.string.carts))
-                    }
-                },
-                state = rememberTooltipState()
+            AnimatedVisibility(
+                visible = showChartMenu,
+                enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
             ) {
-                IconButton(
-                    shapes = customIconButtonShapes(),
-                    onClick = {
-                        // TODO: Profile Show
-                    }
+                TooltipBox(
+                    positionProvider =
+                        TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Below
+                        ),
+                    tooltip = {
+                        PlainTooltip {
+                            Text(text = stringResource(R.string.carts))
+                        }
+                    },
+                    state = rememberTooltipState()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = stringResource(R.string.carts)
-                    )
+                    IconButton(
+                        shapes = customIconButtonShapes(),
+                        onClick = {
+                            // TODO: Carts Show
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = stringResource(R.string.carts)
+                        )
+                    }
                 }
             }
             TooltipBox(

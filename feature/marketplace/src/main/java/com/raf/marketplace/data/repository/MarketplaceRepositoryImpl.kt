@@ -52,6 +52,46 @@ class MarketplaceRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun fetchProductById(
+        token: String,
+        productId: Int,
+    ): ApiResult<Product> {
+        if (!isNetworkAvailable(context)) {
+            return getProductFromLocalByIdIfAvailable(productId, "No Internet Connection")
+        }
+
+        return try {
+            val result = apiService.getProductById("Bearer $token", productId)
+            if (result.isSuccessful) {
+                val product =
+                    result.body()?.toDatabase()
+                        ?: return getProductFromLocalByIdIfAvailable(productId, "Product not found")
+
+                productDao.updateProduct(product)
+
+                val productDomain = product.toDomain()
+                ApiResult.Success(productDomain)
+            } else {
+                val errorMessage = result.errorBody()?.string()?.takeIf { it.isNotEmpty() }
+                    ?: result.message()
+                Log.e(TAG, "Failed to fetch product detail: $errorMessage")
+                getProductFromLocalByIdIfAvailable(productId, errorMessage)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to fetch product detail", e)
+            getProductFromLocalByIdIfAvailable(productId, e.localizedMessage ?: "Unknown Error")
+        }
+    }
+
+    private suspend fun getProductFromLocalByIdIfAvailable(
+        productId: Int,
+        errorMessage: String = "",
+    ): ApiResult<Product> {
+        val productEntity =
+            productDao.getProductById(productId) ?: return ApiResult.Error(errorMessage)
+        return ApiResult.Success(productEntity.toDomain())
+    }
+
     override fun getProducts(productFilter: ProductFilter?): Flow<List<Product>> {
         return try {
             Log.d(TAG, "getProducts: $productFilter")
@@ -60,7 +100,7 @@ class MarketplaceRepositoryImpl @Inject constructor(
             val simpleSQLiteQuery = ProductQueryHelper.createFilteredQuery(
                 query = filter.query,
                 categories = filter.categories,
-                sortTypes = filter.productSortTypes
+                sortType = filter.productSortType
             )
 
             productDao.getProductsFiltered(simpleSQLiteQuery).map { productsEntity ->

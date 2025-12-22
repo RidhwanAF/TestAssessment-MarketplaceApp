@@ -16,5 +16,5 @@ sealed class Route {
     data object Home : NavKey
 
     @Serializable
-    data class Detail(val id: String) : NavKey
+    data class Detail(val id: Int) : NavKey
 }

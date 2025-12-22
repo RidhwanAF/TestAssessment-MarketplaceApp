@@ -3,7 +3,7 @@ package com.raf.marketplace.domain.model
 data class ProductFilter(
     val query: String = "",
     val categories: List<String> = emptyList(),
-    val productSortTypes: List<Pair<ProductSortType, Boolean>> = emptyList(),
+    val productSortType: Pair<ProductSortType, Boolean>? = null,
 )
 
 enum class ProductSortType {

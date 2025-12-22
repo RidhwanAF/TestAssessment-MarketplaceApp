@@ -11,7 +11,9 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.ArrowDownward
@@ -61,9 +63,9 @@ import kotlinx.coroutines.delay
 fun ProductFilterToolbar(
     modifier: Modifier = Modifier,
     scrollBehavior: FloatingToolbarScrollBehavior,
-    selectedSortTypes: List<Pair<ProductSortType, Boolean>>,
+    selectedSortType: Pair<ProductSortType, Boolean>?,
     onClicked: (ProductSortType) -> Unit,
-    onShortByChanged: (ProductSortType) -> Unit,
+    onShortByChanged: (ProductSortType, Boolean) -> Unit,
 ) {
     val localHapticFeedback = LocalHapticFeedback.current
 
@@ -105,43 +107,50 @@ fun ProductFilterToolbar(
                 scaleY = (1f - backProgress).coerceAtLeast(0.9f)
             }
     ) {
-        ProductSortType.entries.forEach { sortType ->
-            val icon = when (sortType) {
-                ProductSortType.NAME -> Icons.Default.Abc
-                ProductSortType.PRICE -> Icons.Default.MonetizationOn
-                ProductSortType.RATING -> Icons.Default.StarRate
-            }
-            val label = when (sortType) {
-                ProductSortType.NAME -> stringResource(R.string.name)
-                ProductSortType.PRICE -> stringResource(R.string.price)
-                ProductSortType.RATING -> stringResource(R.string.rating)
-            }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 2.dp)
+        ) {
+            ProductSortType.entries.forEach { sortType ->
+                val icon = when (sortType) {
+                    ProductSortType.NAME -> Icons.Default.Abc
+                    ProductSortType.PRICE -> Icons.Default.MonetizationOn
+                    ProductSortType.RATING -> Icons.Default.StarRate
+                }
+                val label = when (sortType) {
+                    ProductSortType.NAME -> stringResource(R.string.name)
+                    ProductSortType.PRICE -> stringResource(R.string.price)
+                    ProductSortType.RATING -> stringResource(R.string.rating)
+                }
 
-            val isSelected = selectedSortTypes.any { it.first == sortType }
-            val isSortByASC = selectedSortTypes.any { it.first == sortType && it.second }
+                val isSelected = selectedSortType?.first == sortType
 
-            FilterToolbarItem(
-                icon = icon,
-                label = label,
-                isSelected = isSelected,
-                isSortByASC = isSortByASC,
-                onClicked = {
-                    onClicked(sortType)
-                    if (isSelected) {
-                        localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
-                    } else {
-                        localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                    }
-                },
-                onSortTypeClicked = {
-                    onShortByChanged(sortType)
-                    if (isSortByASC) {
-                        localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
-                    } else {
-                        localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                    }
-                },
-            )
+                FilterToolbarItem(
+                    icon = icon,
+                    label = label,
+                    isSelected = isSelected,
+                    isSortByASC = selectedSortType?.second == true,
+                    onClicked = {
+                        onClicked(sortType)
+                        if (isSelected) {
+                            localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+                        } else {
+                            localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        }
+                    },
+                    onSortTypeClicked = { checked ->
+                        onShortByChanged(sortType, checked)
+                        if (checked) {
+                            localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn)
+                        } else {
+                            localHapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOff)
+                        }
+                    },
+                )
+            }
         }
     }
 }
@@ -155,7 +164,7 @@ private fun FilterToolbarItem(
     isSelected: Boolean,
     isSortByASC: Boolean,
     onClicked: () -> Unit,
-    onSortTypeClicked: () -> Unit,
+    onSortTypeClicked: (Boolean) -> Unit,
 ) {
     val motionScheme = MaterialTheme.motionScheme.fastSpatialSpec<Float>()
     val toolboxPositionProvider =
@@ -169,8 +178,14 @@ private fun FilterToolbarItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
-            .padding(2.dp)
-            .clip(MaterialTheme.shapes.medium)
+            .clip(
+                RoundedCornerShape(
+                    topStart = 16.dp,
+                    bottomStart = 16.dp,
+                    topEnd = 32.dp,
+                    bottomEnd = 32.dp
+                )
+            )
             .background(MaterialTheme.colorScheme.primary.copy(bgColorAlphaAnimation))
             .padding(2.dp)
             .animateContentSize()
@@ -211,7 +226,7 @@ private fun FilterToolbarItem(
             ) {
                 IconToggleButton(
                     checked = isSortByASC,
-                    onCheckedChange = { onSortTypeClicked() }
+                    onCheckedChange = { onSortTypeClicked(it) }
                 ) {
                     AnimatedContent(
                         targetState = isSortByASC,

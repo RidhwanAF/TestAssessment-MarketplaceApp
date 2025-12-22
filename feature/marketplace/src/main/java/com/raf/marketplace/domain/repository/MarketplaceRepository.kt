@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface MarketplaceRepository {
     suspend fun fetchProducts(token: String): ApiResult<List<Product>>
+    suspend fun fetchProductById(token: String, productId: Int): ApiResult<Product>
+
     fun getProducts(productFilter: ProductFilter? = null): Flow<List<Product>>
     fun getProductCategories(): Flow<List<String>>
 }

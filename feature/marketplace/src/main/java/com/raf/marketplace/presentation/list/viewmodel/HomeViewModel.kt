@@ -111,31 +111,21 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onProductFilterByChange(productSortType: ProductSortType) {
-        val currentSortTypes = _productFilterState.value.productSortTypes.toMutableList()
-        val existingSort = currentSortTypes.find { it.first == productSortType }
-
-        if (existingSort != null) {
-            currentSortTypes.remove(existingSort)
+        val currentSortType = _productFilterState.value.productSortType
+        val newSortType = if (productSortType == currentSortType?.first) {
+            null
         } else {
-            currentSortTypes.add(productSortType to true)
+            productSortType to (currentSortType?.second ?: true)
         }
 
         _productFilterState.update {
-            it.copy(productSortTypes = currentSortTypes.toList())
+            it.copy(productSortType = newSortType)
         }
     }
 
-    fun onProductSortByChange(productSortType: ProductSortType) {
-        val currentSortTypes = _productFilterState.value.productSortTypes.toMutableList()
-        val existingSortIndex = currentSortTypes.indexOfFirst { it.first == productSortType }
-
-        if (existingSortIndex != -1) {
-            val (type, isAsc) = currentSortTypes[existingSortIndex]
-            currentSortTypes[existingSortIndex] = type to !isAsc
-
-            _productFilterState.update {
-                it.copy(productSortTypes = currentSortTypes.toList())
-            }
+    fun onProductSortByChange(productSortType: ProductSortType, isSortAsc: Boolean) {
+        _productFilterState.update {
+            it.copy(productSortType = productSortType to isSortAsc)
         }
     }
 
@@ -143,11 +133,11 @@ class HomeViewModel @Inject constructor(
         if (message.isEmpty()) return
         viewModelScope.launch {
             _uiState.update {
-                it.copy(errorMessage = message)
+                it.copy(uiMessage = message)
             }
             delay(1500)
             _uiState.update {
-                it.copy(errorMessage = null)
+                it.copy(uiMessage = null)
             }
         }
     }

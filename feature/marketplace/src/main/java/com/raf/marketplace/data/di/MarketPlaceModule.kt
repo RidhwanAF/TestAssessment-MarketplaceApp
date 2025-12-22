@@ -6,6 +6,7 @@ import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.MarketplaceRepositoryImpl
 import com.raf.marketplace.domain.repository.MarketplaceRepository
+import com.raf.marketplace.domain.usecase.FetchProductByIdUseCase
 import com.raf.marketplace.domain.usecase.FetchProductsUseCase
 import com.raf.marketplace.domain.usecase.GetProductCategoriesUseCase
 import com.raf.marketplace.domain.usecase.GetProductsUseCase
@@ -67,4 +68,9 @@ object MarketPlaceModule {
         return GetProductCategoriesUseCase(marketplaceRepository)
     }
 
+    @Provides
+    @Singleton
+    fun provideFetchProductByIdUseCase(marketplaceRepository: MarketplaceRepository): FetchProductByIdUseCase {
+        return FetchProductByIdUseCase(marketplaceRepository)
+    }
 }

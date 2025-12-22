@@ -2,6 +2,7 @@ package com.raf.marketplace.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlin.math.floor
 
 @Composable
@@ -21,6 +23,7 @@ fun RatingBar(
     rating: Double = 0.0,
     totalRaters: Int = 0,
     stars: Int = 5,
+    bigSize: Boolean = false,
 ) {
     FlowRow(
         verticalArrangement = Arrangement.Center,
@@ -41,18 +44,26 @@ fun RatingBar(
                 if (starType != StarType.BORDER) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
 
-            Star(color = color, starType = starType)
+            Star(
+                color = color,
+                starType = starType,
+                modifier = Modifier.size(if (bigSize) 32.dp else 24.dp)
+            )
         }
         Text(
             text = " ($totalRaters)",
-            style = MaterialTheme.typography.bodySmall,
+            style = if (bigSize) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
         )
     }
 }
 
 @Composable
-private fun Star(color: Color, starType: StarType = StarType.BORDER) {
+private fun Star(
+    modifier: Modifier = Modifier,
+    color: Color,
+    starType: StarType = StarType.BORDER,
+) {
     Icon(
         imageVector = when (starType) {
             StarType.BORDER -> Icons.Outlined.StarRate
@@ -60,7 +71,8 @@ private fun Star(color: Color, starType: StarType = StarType.BORDER) {
             StarType.FULL -> Icons.Filled.Star
         },
         contentDescription = null,
-        tint = color
+        tint = color,
+        modifier = modifier
     )
 }
 

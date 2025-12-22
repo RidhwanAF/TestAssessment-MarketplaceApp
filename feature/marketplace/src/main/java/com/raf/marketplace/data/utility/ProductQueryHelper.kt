@@ -8,10 +8,10 @@ object ProductQueryHelper {
     fun createFilteredQuery(
         query: String,
         categories: List<String>,
-        sortTypes: List<Pair<ProductSortType, Boolean>>,
+        sortType: Pair<ProductSortType, Boolean>?,
     ): SimpleSQLiteQuery {
-        val sortClause = if (sortTypes.isNotEmpty()) {
-            val sortExpressions = sortTypes.map { (sortType, isAsc) ->
+        val sortClause = if (sortType != null) {
+            val sortExpressions = sortType.let { (sortType, isAsc) ->
                 val sortOrder = if (isAsc) "ASC" else "DESC"
                 when (sortType) {
                     ProductSortType.NAME -> "title $sortOrder"
@@ -19,7 +19,7 @@ object ProductQueryHelper {
                     ProductSortType.RATING -> "rating $sortOrder"
                 }
             }
-            "ORDER BY ${sortExpressions.joinToString(", ")}"
+            "ORDER BY $sortExpressions"
         } else ""
 
         var queryString = "SELECT * FROM products WHERE title LIKE '%' || ? || '%'"
@@ -32,7 +32,6 @@ object ProductQueryHelper {
         }
 
         queryString += " $sortClause"
-
         return SimpleSQLiteQuery(queryString, args.toTypedArray())
     }
 
