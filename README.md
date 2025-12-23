@@ -42,22 +42,3 @@ Unlike typical demos, this app focuses on **"Delight"**—utilizing fluid Shared
 ### 3. 🔐 Security & Auth
 * **Encrypted Storage**: Auth tokens and passwords are encrypted and stored in Proto DataStore.
 * **Validation**: Real-time input validation for Login/Register flows.
-
-## 🏗 Architecture
-
-The app is modularized by feature to ensure scalability and separation of concerns.
-
-```mermaid
-graph TD
-    app(App Module) --> feature_home
-    app --> feature_cart
-    app --> feature_auth
-    
-    feature_home --> domain
-    feature_cart --> domain
-    feature_auth --> domain
-    
-    domain(Domain Layer) --> data(Data Layer)
-    
-    data --> local(Room / DataStore)
-    data --> remote(Retrofit / FakeStoreAPI)
