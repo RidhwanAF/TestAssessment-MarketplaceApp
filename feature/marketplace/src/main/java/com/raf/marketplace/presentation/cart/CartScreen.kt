@@ -20,8 +20,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ShoppingCartCheckout
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -32,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
@@ -187,17 +190,67 @@ fun SharedTransitionScope.CartScreen(
                 CartItem(
                     productInCart = productInCart,
                     onSumOrSubtractQuantity = { isSum ->
-                        viewModel.updateCartItem(productInCart.product.id, isSum)
+                        if (productInCart.cart.quantity == 1 && !isSum) {
+                            viewModel.onRemovingItemFromCart(productInCart.product.id)
+                        } else {
+                            viewModel.updateCartItem(productInCart.product.id, isSum)
+                        }
                     },
                     onClick = {
                         onItemClicked(productInCart.product.id)
                     },
+                    onRemovingProductId = uiState.removingItemById,
                     onRemove = {
-                        // TODO
+                        viewModel.onRemovingItemFromCart(productInCart.product.id)
                     },
                     modifier = Modifier.animateItem()
                 )
             }
         }
+    }
+
+    /**
+     * Dialogs
+     */
+    uiState.removingItemById?.let { removingId ->
+        val currentRemovingProduct =
+            uiState.productsInCart.find { it.product.id == removingId }
+
+        AlertDialog(
+            onDismissRequest = { viewModel.onRemovingItemFromCart(null) },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.remove_item)
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.remove_item),
+                    maxLines = 1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(
+                        R.string.remove_item_with_args,
+                        currentRemovingProduct?.product?.title ?: stringResource(R.string.this_item)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.deleteCartItem(removingId) }
+                ) { Text(text = stringResource(R.string.yes)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onRemovingItemFromCart(null) }) {
+                    Text(text = stringResource(R.string.no))
+                }
+            }
+        )
     }
 }

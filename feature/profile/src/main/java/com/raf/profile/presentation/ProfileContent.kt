@@ -269,7 +269,6 @@ fun ProfileContent(
                 text = {
                     Text(
                         text = stringResource(R.string.are_you_sure_you_want_to_logout),
-                        maxLines = 1,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )

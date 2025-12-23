@@ -74,6 +74,7 @@ class CartViewModel @Inject constructor(
     fun deleteCartItem(productId: Int) {
         viewModelScope.launch {
             deleteItemCartUseCase(productId)
+            _uiState.update { it.copy(removingItemById = null) }
         }
     }
 
@@ -95,6 +96,10 @@ class CartViewModel @Inject constructor(
 
             updateItemCartByProductIdUseCase(productId, quantity)
         }
+    }
+
+    fun onRemovingItemFromCart(productId: Int?) {
+        _uiState.update { it.copy(removingItemById = productId) }
     }
 
 //    var job: Job? = null

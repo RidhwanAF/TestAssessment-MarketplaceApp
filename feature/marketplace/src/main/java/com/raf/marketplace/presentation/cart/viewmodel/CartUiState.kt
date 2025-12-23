@@ -8,6 +8,7 @@ data class CartUiState(
     val totalPriceInDollar: Double = 0.0,
     val totalQuantity: Int = 0,
     val uiMessage: String? = null,
+    val removingItemById: Int? = null,
 )
 
 data class ProductInCartUi(

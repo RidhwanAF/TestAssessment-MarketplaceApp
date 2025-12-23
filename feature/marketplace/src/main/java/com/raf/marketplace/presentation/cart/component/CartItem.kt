@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,7 @@ import kotlin.math.sign
 fun CartItem(
     modifier: Modifier = Modifier,
     productInCart: ProductInCartUi,
+    onRemovingProductId: Int?,
     onClick: () -> Unit,
     onSumOrSubtractQuantity: (isSum: Boolean) -> Unit,
     onRemove: () -> Unit,
@@ -82,7 +84,13 @@ fun CartItem(
     val isPastThreshold by remember(contentSize) {
         derivedStateOf {
             if (contentSize.width == 0) return@derivedStateOf false
-            abs(offsetX.value) > (contentSize.width / 2f)
+            abs(offsetX.value) > (contentSize.width / 3f)
+        }
+    }
+
+    LaunchedEffect(onRemovingProductId) {
+        if (onRemovingProductId == null) {
+            offsetX.animateTo(0f)
         }
     }
 
@@ -106,9 +114,23 @@ fun CartItem(
                 .background(MaterialTheme.colorScheme.error)
                 .padding(horizontal = 32.dp)
         ) {
-            repeat(2) {
+            Row(modifier = Modifier.size(32.dp)) {
                 AnimatedVisibility(
-                    visible = abs(offsetX.value) > 150f,
+                    visible = offsetX.value > (contentSize.width / 3f),
+                    enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
+                    exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.delete),
+                        tint = MaterialTheme.colorScheme.onError,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+            Row(modifier = Modifier.size(32.dp)) {
+                AnimatedVisibility(
+                    visible = offsetX.value < -(contentSize.width / 3f),
                     enter = scaleIn(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()),
                     exit = scaleOut(animationSpec = MaterialTheme.motionScheme.fastSpatialSpec())
                 ) {
@@ -156,7 +178,7 @@ fun CartItem(
                             scope.launch {
                                 offsetX.snapTo(newX)
                             }
-                            val threshold = contentSize.width / 2f
+                            val threshold = contentSize.width / 3f
                             if (abs(originalX) < threshold && abs(newX) >= threshold) {
                                 localHapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
                             }
