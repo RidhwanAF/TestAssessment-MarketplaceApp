@@ -12,5 +12,4 @@ object NetworkHelper {
             connectivityManager.getNetworkCapabilities(network) ?: return false
         return networkCapabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
-
 }

@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Entity(tableName = "products")
 data class ProductEntity(
-    @PrimaryKey val id: Int,
+    @PrimaryKey
+    val id: Int,
     val title: String,
     val price: Double,
     val description: String,
