@@ -107,7 +107,7 @@ fun ProfileContent(
             ) {
                 Text(
                     text = stringResource(R.string.profile),
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.titleLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)

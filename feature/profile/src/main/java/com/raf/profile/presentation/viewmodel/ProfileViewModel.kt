@@ -7,9 +7,9 @@ import com.raf.core.domain.model.ApiResult
 import com.raf.core.domain.usecase.DeleteAllItemCartUseCase
 import com.raf.core.domain.usecase.GetAuthTokenUseCase
 import com.raf.core.domain.usecase.GetUserIdUseCase
+import com.raf.core.domain.usecase.GetUserProfileUseCase
 import com.raf.core.domain.usecase.LogoutUseCase
 import com.raf.profile.domain.usecase.DeleteUserProfileByIdUseCase
-import com.raf.core.domain.usecase.GetUserProfileUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

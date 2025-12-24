@@ -9,8 +9,8 @@ import com.raf.marketplace.data.local.room.MarketplaceDatabase
 import com.raf.marketplace.data.remote.MarketplaceApiService
 import com.raf.marketplace.data.repository.mapper.CartMapper.toDomain
 import com.raf.marketplace.data.repository.mapper.CartMapper.toEntity
-import com.raf.marketplace.data.repository.mapper.ProductMapper.toEntity
 import com.raf.marketplace.data.repository.mapper.ProductMapper.toDomain
+import com.raf.marketplace.data.repository.mapper.ProductMapper.toEntity
 import com.raf.marketplace.data.utility.ProductQueryHelper
 import com.raf.marketplace.domain.model.Cart
 import com.raf.marketplace.domain.model.Product
